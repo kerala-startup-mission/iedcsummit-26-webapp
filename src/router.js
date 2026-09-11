@@ -13,6 +13,11 @@ const routes = [
   },
   { path: '/venue-map', name: 'venue-map', component: () => import('./views/VenueMapView.vue') },
   {
+    path: '/entry-pass',
+    name: 'entry-pass',
+    component: () => import('./views/EntryPassView.vue'),
+  },
+  {
     path: '/travel-plan',
     name: 'travel-plan',
     component: () => import('./views/TravelPlanView.vue'),

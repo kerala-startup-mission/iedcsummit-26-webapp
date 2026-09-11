@@ -1,13 +1,17 @@
 <script setup>
+import { computed } from 'vue'
 import { RouterLink } from 'vue-router'
 import { config } from '../event'
+import { getTicketCode } from '../ticket'
 
-const tiles = [
+// Entry Pass only appears once a ticket code has arrived via ?code= and been remembered.
+const tiles = computed(() => [
   { to: '/agenda', label: 'Agenda', icon: 'calendar' },
   { to: '/speakers', label: 'Speakers', icon: 'users' },
   { to: '/venue-map', label: 'Venue Map', icon: 'map' },
   { to: '/travel-plan', label: 'Travel Plan', icon: 'bus' },
-]
+  ...(getTicketCode() ? [{ to: '/entry-pass', label: 'Entry Pass', icon: 'ticket' }] : []),
+])
 </script>
 
 <template>
@@ -68,11 +72,17 @@ const tiles = [
             <path d="M9 4L3 6.5v13L9 17l6 2.5 6-2.5v-13L15 6.5 9 4z" />
             <path d="M9 4v13M15 6.5v13" />
           </template>
-          <template v-else>
+          <template v-else-if="tile.icon === 'bus'">
             <rect x="3" y="5" width="18" height="11" rx="2.5" />
             <path d="M3 10.5h18M9 5v5.5" />
             <circle cx="7.5" cy="19" r="1.6" />
             <circle cx="16.5" cy="19" r="1.6" />
+          </template>
+          <template v-else>
+            <path
+              d="M3 9.5V7a2 2 0 012-2h14a2 2 0 012 2v2.5a2.5 2.5 0 000 5V17a2 2 0 01-2 2H5a2 2 0 01-2-2v-2.5a2.5 2.5 0 000-5z"
+            />
+            <path d="M14 5v14" stroke-dasharray="2 2.5" />
           </template>
         </svg>
         <span class="text-center text-sm leading-tight font-semibold">{{ tile.label }}</span>

@@ -47,6 +47,17 @@ export default defineConfig({
             },
           },
           {
+            // The visitor's entry pass. Venue wifi is exactly where this has to work, and a
+            // badge for a given code never changes. Listed before the photo rule below.
+            urlPattern: /\/tickets\/[^/]+\/badge$/,
+            handler: 'CacheFirst',
+            options: {
+              cacheName: 'entry-pass',
+              expiration: { maxEntries: 5, maxAgeSeconds: 30 * DAY },
+              cacheableResponse: { statuses: [0, 200] },
+            },
+          },
+          {
             // Speaker photos. Immutable once published, and there are ~170 of them.
             urlPattern: /^https:\/\/storage\.startupmission\.in\/.*/i,
             handler: 'CacheFirst',

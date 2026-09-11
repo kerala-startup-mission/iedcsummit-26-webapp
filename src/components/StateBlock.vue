@@ -2,6 +2,8 @@
 defineProps({
   loading: Boolean,
   error: { type: [Error, String, null], default: null },
+  errorTitle: { type: String, default: "Couldn't load this" },
+  errorText: { type: String, default: 'Check your connection and try again.' },
   empty: Boolean,
   emptyTitle: { type: String, default: 'Nothing here yet' },
   emptyText: { type: String, default: '' },
@@ -20,10 +22,8 @@ defineEmits(['retry'])
   </div>
 
   <div v-else-if="error" class="px-4 py-10 text-center">
-    <p class="font-display text-base font-bold">Couldn't load this</p>
-    <p class="mx-auto mt-1 max-w-xs text-sm text-muted">
-      Check your connection and try again.
-    </p>
+    <p class="font-display text-base font-bold">{{ errorTitle }}</p>
+    <p class="mx-auto mt-1 max-w-xs text-sm text-muted">{{ errorText }}</p>
     <button
       type="button"
       class="mt-4 rounded-full bg-brand px-5 py-2 text-sm font-semibold text-white transition hover:bg-brand-dark"
