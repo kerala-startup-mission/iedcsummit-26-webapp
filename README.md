@@ -74,6 +74,56 @@ pnpm preview  # serve the production build
 | `/speakers/:hid` | `loadSpeaker` — profile plus the sessions that speaker is in |
 | `/venue-map`, `/travel-plan` | Placeholders |
 
+## Offline support
+
+A Workbox service worker (via `vite-plugin-pwa`, `generateSW` mode) is generated at build
+time, so the app keeps working without a connection once it has been opened.
+
+**Precached** — every built asset: the app shell, all five route chunks (so any page works
+offline, not just the ones visited), the agenda package chunk, CSS, favicon and banner.
+`index.html` is registered as the navigation fallback, so deep links like `/speakers/46x6Y`
+resolve offline too.
+
+**Runtime caches** — configured in [vite.config.js](vite.config.js):
+
+| What | Strategy | Notes |
+| --- | --- | --- |
+| `/api/event/…` | NetworkFirst, 5s timeout | Fresh when online, last response offline. 7 days, 200 entries. Matched by path so a runtime-configured API origin still hits it |
+| Speaker photos | CacheFirst | 30 days, 400 entries; `[0, 200]` since `<img>` responses are opaque |
+| Google Fonts CSS | StaleWhileRevalidate | |
+| Google Fonts files | CacheFirst | 1 year |
+| `config.js` | NetworkFirst, 3s timeout | Deliberately **not** precached — it is rewritten on every container start, and precaching would pin the app to the configuration baked into the image |
+
+**Cache warming.** A service worker can only serve what was requested at some point, so
+opening just the home screen and then losing signal would leave Agenda and Speakers broken.
+`warmCache()` in [src/event.js](src/event.js), called from [src/main.js](src/main.js), fetches
+both lists on idle after first paint. It also makes the first navigation instant. Skipped when
+`navigator.onLine` is false, and deferred to `requestIdleCallback` so the ~194KB agenda chunk
+does not compete with first paint.
+
+**Speaker detail fallback.** There are ~170 speaker detail endpoints and only the visited ones
+get cached. When one is unreachable, [SpeakerView](src/views/SpeakerView.vue) falls back to
+that speaker's entry in the cached list, which carries everything except `bio` and `agendas` —
+both already hidden when empty. The error state still appears if the speaker is in neither
+place.
+
+The Workbox runtime is inlined into a single `sw.js` rather than split into a separately
+hashed `workbox-*.js`, so there is one file to serve and nothing to keep in sync. nginx sends
+`no-store` for `sw.js`, `registerSW.js` and `config.js`; a stale service worker would pin
+visitors to an old precache manifest.
+
+`registerType` is `autoUpdate`, so a new deploy takes over on the next visit. The service
+worker is disabled in `pnpm dev` — use `pnpm build && pnpm preview` to exercise it.
+
+> Not verified live in this environment: service worker registration fails inside the
+> sandboxed browser used during development (it rejects even a 134-byte worker script), so
+> offline behaviour was confirmed by inspecting the generated `sw.js` rather than by going
+> offline. To check it yourself: `pnpm build && pnpm preview`, open the app, then in DevTools
+> → Application → Service Workers tick **Offline** and reload.
+
+No web app manifest is generated (`manifest: false`) — this is offline caching, not an
+installable PWA. Say the word if you want the install prompt and icons.
+
 ## Docker
 
 ```bash

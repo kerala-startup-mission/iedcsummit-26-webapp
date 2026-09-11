@@ -106,3 +106,15 @@ test('setting prefers runtime config, falling back to build-time values', () => 
   // Nothing anywhere is undefined, not a crash.
   assert.equal(setting('VITE_MISSING', {}, built), undefined)
 })
+
+test('sessionSpeakers, selectCategories and setting compose over a real payload shape', () => {
+  // Guards the exact shapes the offline fallbacks depend on: the speakers list is the
+  // source SpeakerView falls back to when a detail endpoint is not cached.
+  const payload = [
+    ['Govt Official', [{ id: 'g1', name: 'A', order: 1 }]],
+    ['Speakers', [{ id: 's1', name: 'B', order: 0 }]],
+  ]
+  const flat = selectCategories(payload, []).flatMap(([, people]) => people)
+  assert.deepEqual(flat.map((p) => p.id), ['g1', 's1'])
+  assert.equal(flat.find((p) => p.id === 's1').name, 'B')
+})

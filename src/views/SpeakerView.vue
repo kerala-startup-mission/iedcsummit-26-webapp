@@ -4,7 +4,7 @@ import PageHeader from '../components/PageHeader.vue'
 import SessionCard from '../components/SessionCard.vue'
 import SpeakerAvatar from '../components/SpeakerAvatar.vue'
 import StateBlock from '../components/StateBlock.vue'
-import { clean, getSpeaker } from '../event'
+import { clean, findSpeaker, getSpeaker } from '../event'
 
 const props = defineProps({ hid: { type: String, required: true } })
 
@@ -19,7 +19,12 @@ async function load() {
   try {
     speaker.value = await getSpeaker(props.hid)
   } catch (e) {
-    error.value = e
+    // Offline, most likely: this speaker's detail endpoint was never fetched, so the
+    // service worker has nothing for it. The speakers list is cached as a whole, so fall
+    // back to that entry — it has everything but `bio` and `agendas`, both of which the
+    // template already hides when empty.
+    speaker.value = await findSpeaker(props.hid).catch(() => null)
+    if (!speaker.value) error.value = e
   } finally {
     loading.value = false
   }

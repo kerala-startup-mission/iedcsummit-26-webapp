@@ -91,6 +91,39 @@ export function getSpeaker(hid) {
 }
 
 /**
+ * The list entry for a speaker, used when the detail endpoint is unreachable.
+ *
+ * The list carries everything the detail response does except `bio` and `agendas`, so an
+ * offline visitor still gets a usable profile instead of an error page.
+ */
+export async function findSpeaker(hid) {
+  const { speakers } = await getSpeakers()
+  return speakers.flatMap(([, people]) => people).find((person) => person.id === hid) ?? null
+}
+
+/**
+ * Fetch the agenda and speaker lists in the background on first load.
+ *
+ * The service worker can only serve what was actually requested at some point, so without
+ * this a visitor who opens the home screen and then loses signal finds both pages broken.
+ * Warming them also makes the first navigation instant, since the promises are cached.
+ *
+ * Deferred to idle: it pulls the ~194KB agenda chunk that is code-split away from the
+ * entry bundle on purpose, and that should not compete with first paint.
+ */
+export function warmCache() {
+  if (typeof window === 'undefined' || navigator.onLine === false) return
+  const warm = () => {
+    // Failures are ignored: the loaders clear their cached promise on error, so the
+    // views retry on their own. This is opportunistic only.
+    getAgenda().catch(() => {})
+    getSpeakers().catch(() => {})
+  }
+  if ('requestIdleCallback' in window) requestIdleCallback(warm, { timeout: 5000 })
+  else setTimeout(warm, 2000)
+}
+
+/**
  * An agenda item's `speakers` is `{ category: [speaker, ...] }` when it has any and
  * the empty array `[]` when it does not. Flatten both to a plain list.
  */
