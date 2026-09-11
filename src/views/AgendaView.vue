@@ -64,7 +64,7 @@ watch(venues, (list) => {
       </template>
 
       <!-- One date is the common case (the summit is single-day); a lone pill is noise. -->
-      <div v-if="dates.length > 1" class="no-scrollbar flex gap-2 overflow-x-auto px-4 pt-4">
+      <div v-if="dates.length > 1" class="no-scrollbar flex gap-2 overflow-x-auto px-4 pt-4 pb-1">
         <button
           v-for="date in dates"
           :key="date"
