@@ -15,6 +15,13 @@
   </head>
   <body>
     <div id="app"></div>
+    <!--
+      Runtime configuration, read before the app module runs. Served from public/ as an
+      empty object; the Docker image rewrites it at container start so one image can be
+      pointed at a different event without rebuilding. %BASE_URL% keeps it resolvable
+      when the app is deployed under a subpath.
+    -->
+    <script src="%BASE_URL%config.js"></script>
     <script type="module" src="/src/main.js"></script>
   </body>
 </html>

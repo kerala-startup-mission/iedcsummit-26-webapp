@@ -9,15 +9,33 @@
 // `?? {}` so the pure helpers below stay importable from plain Node (see event.test.js).
 const env = import.meta.env ?? {}
 
+// Written by public/config.js, which the Docker image regenerates from container
+// environment variables at startup. Lets one image serve any event without a rebuild;
+// empty or absent (dev servers, static hosts) falls through to the build-time values.
+const runtime = (typeof window !== 'undefined' && window.__EVENT_CONFIG__) || {}
+
+/**
+ * Runtime value if present, otherwise the value Vite inlined at build time.
+ *
+ * Only a missing key falls through. An explicitly empty value is honoured, so
+ * `-e VITE_EVENT_BANNER=` clears the banner instead of silently restoring the baked-in
+ * one — the entrypoint writes only variables the container actually has, so an empty
+ * string here is always deliberate.
+ */
+export function setting(key, source = runtime, fallback = env) {
+  const value = source?.[key]
+  return value === undefined || value === null ? fallback?.[key] : value
+}
+
 export const config = {
-  url: env.VITE_EVENT_BASE_URL,
-  event: env.VITE_EVENT_SLUG,
-  name: env.VITE_EVENT_NAME,
-  banner: withBase(env.VITE_EVENT_BANNER, env.BASE_URL),
-  date: env.VITE_EVENT_DATE,
-  venue: env.VITE_EVENT_VENUE,
+  url: setting('VITE_EVENT_BASE_URL'),
+  event: setting('VITE_EVENT_SLUG'),
+  name: setting('VITE_EVENT_NAME'),
+  banner: withBase(setting('VITE_EVENT_BANNER'), env.BASE_URL),
+  date: setting('VITE_EVENT_DATE'),
+  venue: setting('VITE_EVENT_VENUE'),
   /** Speaker categories to show, in display order. Empty means show every category. */
-  speakerCategories: splitList(env.VITE_EVENT_SPEAKER_CATEGORIES),
+  speakerCategories: splitList(setting('VITE_EVENT_SPEAKER_CATEGORIES')),
 }
 
 /**

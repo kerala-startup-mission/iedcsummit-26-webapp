@@ -6,6 +6,7 @@ import {
   initials,
   selectCategories,
   sessionSpeakers,
+  setting,
   timeRange,
   withBase,
 } from './event.js'
@@ -86,4 +87,22 @@ test('withBase resolves public assets against the deploy base path', () => {
   // Unset banner stays unset, so the text hero fallback still triggers.
   assert.equal(withBase('', '/my-repo/'), '')
   assert.equal(withBase(undefined, '/my-repo/'), undefined)
+})
+
+test('setting prefers runtime config, falling back to build-time values', () => {
+  const built = { VITE_EVENT_SLUG: 'iedc-summit-2026', VITE_EVENT_NAME: 'IEDC Summit 2026' }
+
+  // Container environment wins over what Vite inlined.
+  assert.equal(setting('VITE_EVENT_SLUG', { VITE_EVENT_SLUG: 'runtime' }, built), 'runtime')
+
+  // A key the container does not define falls through to the build-time value, which is
+  // what keeps partial configuration safe.
+  assert.equal(setting('VITE_EVENT_SLUG', {}, built), 'iedc-summit-2026')
+  assert.equal(setting('VITE_EVENT_SLUG', { VITE_EVENT_SLUG: null }, built), 'iedc-summit-2026')
+
+  // But an explicitly empty value is honoured: `-e VITE_EVENT_BANNER=` clears the banner.
+  assert.equal(setting('VITE_EVENT_BANNER', { VITE_EVENT_BANNER: '' }, built), '')
+
+  // Nothing anywhere is undefined, not a crash.
+  assert.equal(setting('VITE_MISSING', {}, built), undefined)
 })

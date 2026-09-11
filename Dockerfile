@@ -35,6 +35,12 @@ RUN pnpm build
 FROM nginx:1.29-alpine AS runtime
 
 COPY docker/nginx.conf /etc/nginx/conf.d/default.conf
+
+# Runs before nginx starts, rewriting config.js from the container's VITE_* variables.
+# This is what lets runtime environment variables reconfigure an already-built image;
+# the build args above only set the baked-in defaults it falls back to.
+COPY docker/40-write-config.sh /docker-entrypoint.d/40-write-config.sh
+
 COPY --from=build /app/dist /usr/share/nginx/html
 
 EXPOSE 80

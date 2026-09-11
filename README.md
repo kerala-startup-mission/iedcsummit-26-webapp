@@ -86,10 +86,35 @@ The nginx config handles the history-mode fallback, so deep links like `/speaker
 work on reload, and serves hashed assets immutable for a year while keeping `index.html`
 uncached.
 
-**Configuration is baked in at build time.** Vite inlines `VITE_*` into the bundle, so setting
-these on `docker run` does nothing — pass them as build args instead. The defaults match
-`.env.example`, so a plain `docker build .` produces the 2026 app. To point an image somewhere
-else:
+### Configuring the image
+
+Set `VITE_*` as ordinary **runtime** environment variables — no rebuild, no build args:
+
+```bash
+docker run --rm -p 8080:80 \
+  -e VITE_EVENT_SLUG=iedc-summit-2025 \
+  -e VITE_EVENT_NAME="IEDC Summit 2025" \
+  -e "VITE_EVENT_SPEAKER_CATEGORIES=Partners, Speakers" \
+  iedcsummit-webapp:2026
+```
+
+Vite normally inlines `VITE_*` at build time, which is why `docker run -e` has no effect on a
+plain Vite image. [`docker/40-write-config.sh`](docker/40-write-config.sh) works around that:
+nginx runs it from `/docker-entrypoint.d/` on every container start, and it regenerates
+`config.js` from the container's environment. The app reads that first and falls back to the
+build-time value for anything the container does not define, so partial configuration is safe.
+An explicitly empty value is honoured rather than ignored — `-e VITE_EVENT_BANNER=` clears the
+banner and restores the text hero.
+
+**On Dokploy:** put these in the application's normal **Environment** tab. The separate *Build
+Time Arguments* field (Dockerfile build type only) still works and sets the baked-in defaults,
+but it is no longer required — runtime variables take precedence over it.
+
+### Build-time defaults
+
+The `ARG`s in the Dockerfile set the values used when the container defines nothing. They
+default to `.env.example`, so a plain `docker build .` produces the 2026 app. To change what an
+image falls back to:
 
 ```bash
 docker build -t iedcsummit-webapp:2025 \
