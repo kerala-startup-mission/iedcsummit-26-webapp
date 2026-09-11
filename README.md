@@ -119,7 +119,21 @@ specific to Pages are handled for you:
   URL. The response carries a 404 status — that is inherent to the technique and does not
   affect what the visitor sees.
 
-Deployed configuration comes from the committed `.env.example`; edit it to re-point the site.
+### Configuring the deploy
+
+Set any `VITE_*` value as a **repository secret** (Settings → Secrets and variables → Actions)
+and it overrides the matching line in `.env.example` at build time. Anything you don't set
+keeps its committed default, so you can override just the slug and leave the rest alone.
+
+> These values are inlined into the JavaScript bundle and the published site is public, so a
+> secret configured here is **not** hidden from visitors — it only keeps the value out of the
+> repository. That's fine for everything the app needs (a public API base URL, an event slug,
+> display text); don't put a credential in one.
+
+The merge is done by [`.github/scripts/write-env.mjs`](.github/scripts/write-env.mjs), which
+reads `toJSON(secrets)` on stdin. Passing the secrets through a workflow `env:` block instead
+would break partial configuration: an unset secret expands to `""`, and an empty `VITE_*` in
+the environment overrides `.env` rather than falling through to it.
 
 ## Deploying elsewhere
 
