@@ -1,0 +1,76 @@
+name: Deploy to GitHub Pages
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+# Allow the workflow to publish to Pages via OIDC.
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# One deploy at a time; let an in-flight run finish rather than cancelling it.
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - run: pnpm install --frozen-lockfile
+
+      - run: pnpm test
+
+      - name: Resolve Pages base path
+        id: base
+        # A user/org site (owner.github.io) is served from /, a project site from /<repo>/.
+        run: |
+          repo='${{ github.event.repository.name }}'
+          if [ "$repo" = "${{ github.repository_owner }}.github.io" ]; then
+            echo "path=/" >> "$GITHUB_OUTPUT"
+          else
+            echo "path=/$repo/" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Build
+        # Vite inlines VITE_* at build time and .env is gitignored, so the deployed
+        # configuration is whatever .env.example holds. Edit that file to re-point the
+        # site at another event. Passing these as workflow env vars instead would be a
+        # trap: an unset repository variable expands to "", which overrides .env rather
+        # than falling through to it, and would ship a blank config.
+        run: |
+          cp .env.example .env
+          pnpm build --base='${{ steps.base.outputs.path }}'
+
+      - name: Add SPA fallback
+        # Pages cannot rewrite unmatched paths, but it does serve 404.html for them.
+        # Shipping the app shell as 404.html makes deep links like /speakers/46x6Y work.
+        run: cp dist/index.html dist/404.html
+
+      - uses: actions/configure-pages@v5
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: dist
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4

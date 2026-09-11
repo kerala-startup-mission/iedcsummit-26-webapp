@@ -1,0 +1,23 @@
+@import "tailwindcss";
+
+@theme {
+  --color-brand: #097ED8;
+  --color-brand-light: #0483EE;
+  --color-brand-dark: #0466B4;
+  --color-ink: #050505;
+  --color-tint: #DFEEFC;
+  --color-muted: #8A909D;
+  --color-line: #E3E9F2;
+  --color-page: #F5F9FE;
+
+  --font-sans: "Manrope", ui-sans-serif, system-ui, sans-serif;
+  --font-display: "Space Grotesk", ui-sans-serif, system-ui, sans-serif;
+}
+
+/* Horizontal chip strips scroll without showing a scrollbar on desktop. */
+.no-scrollbar {
+  scrollbar-width: none;
+}
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}

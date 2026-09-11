@@ -1,0 +1,13 @@
+.git
+.gitignore
+node_modules
+dist
+# Excluded so a local .env can never override the build args above.
+.env
+.env.*
+!.env.example
+.claude
+.DS_Store
+README.md
+Dockerfile
+.dockerignore
