@@ -18,7 +18,7 @@ export default defineConfig({
         // hashed workbox-*.js, which is one more thing to serve correctly and to keep
         // in sync with the service worker that references it.
         inlineWorkboxRuntime: true,
-        globPatterns: ['**/*.{js,css,html,svg,png,ico,woff2}'],
+        globPatterns: ['**/*.{js,css,html,svg,png,jpg,jpeg,webp,ico,woff2}'],
         // config.js is rewritten on every container start; precaching it would pin the
         // app to whatever configuration the image was built with.
         globIgnores: ['**/config.js'],

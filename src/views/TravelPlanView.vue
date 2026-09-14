@@ -1,5 +1,4 @@
 <script setup>
-import { onMounted, onUnmounted, ref } from 'vue'
 import PageHeader from '../components/PageHeader.vue'
 
 /**
@@ -9,8 +8,6 @@ import PageHeader from '../components/PageHeader.vue'
 const TRAVEL = {
   address: 'Sahrdaya College of Engineering & Technology, Kodakara, Thrissur.',
   coordinates: '10.3604945,76.2842346',
-  mapEmbed:
-    'https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3924.7671460208717!2d76.28423459999999!3d10.3604945!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3ba7f83104152d61%3A0x47836d6961e2b979!2sSahrdaya%20College%20of%20Engineering%20and%20Technology(Autonomous)!5e0!3m2!1sen!2sin!4v1786028950757!5m2!1sen!2sin',
   train: {
     title: 'Reach Irinjalakuda by train.',
     intro:
@@ -63,22 +60,13 @@ const TRAVEL = {
   ],
 }
 
+// Both opened on tap, in whatever maps app the device has. No embedded map: a React Native
+// WebView hands an iframe's load to the external browser, which pops a Chrome tab showing
+// Google's "must be used in an iframe" error just from visiting this page. A static image
+// has none of that problem and works offline too.
 const directionsUrl = `https://www.google.com/maps/dir/?api=1&destination=${TRAVEL.coordinates}`
-
-// The embedded map is dead weight without a connection — an empty grey box on the one page
-// people are most likely to open while travelling. Drop it offline, keep everything else.
-const online = ref(true)
-const sync = () => (online.value = navigator.onLine !== false)
-
-onMounted(() => {
-  sync()
-  window.addEventListener('online', sync)
-  window.addEventListener('offline', sync)
-})
-onUnmounted(() => {
-  window.removeEventListener('online', sync)
-  window.removeEventListener('offline', sync)
-})
+// Google's own short link for the venue, so the place page opens with the right listing.
+const placeUrl = 'https://maps.app.goo.gl/oweKptB1WorSqK8VA'
 </script>
 
 <template>
@@ -110,15 +98,42 @@ onUnmounted(() => {
         Get directions
       </a>
 
-      <div v-if="online" class="mt-4 overflow-hidden rounded-xl ring-1 ring-line">
-        <iframe
-          :src="TRAVEL.mapEmbed"
-          title="Map of Sahrdaya College of Engineering & Technology"
-          loading="lazy"
-          referrerpolicy="no-referrer-when-downgrade"
-          class="block aspect-[4/3] w-full border-0"
-        ></iframe>
-      </div>
+      <!--
+        Static preview rather than an embed, for the WebView reason above. OpenStreetMap
+        imagery, with its attribution rendered into the picture. Tapping it opens the venue
+        in Google Maps.
+      -->
+      <a
+        :href="placeUrl"
+        target="_blank"
+        rel="noopener noreferrer"
+        class="mt-4 block overflow-hidden rounded-xl ring-1 ring-line transition active:opacity-90"
+      >
+        <img
+          src="/summit-venue-map.jpg"
+          alt="Map showing Sahrdaya College of Engineering & Technology at Kodakara. Opens in Google Maps."
+          width="1200"
+          height="900"
+          class="block aspect-[4/3] w-full object-cover"
+        />
+        <span
+          class="flex items-center justify-center gap-1.5 bg-white py-2 text-xs font-semibold text-brand"
+        >
+          Open in Google Maps
+          <svg
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            class="size-3.5"
+          >
+            <path d="M14 4h6v6M20 4l-8.5 8.5" />
+            <path d="M18 14v5a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h5" />
+          </svg>
+        </span>
+      </a>
     </section>
 
     <!-- Route map -->
