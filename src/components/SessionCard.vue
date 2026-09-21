@@ -3,6 +3,7 @@ import { computed } from 'vue'
 import { RouterLink } from 'vue-router'
 import SpeakerAvatar from './SpeakerAvatar.vue'
 import { clean, sessionSpeakers, timeRange } from '../event'
+import { renderMarkdown } from '../markdown'
 
 const props = defineProps({
   item: { type: Object, required: true },
@@ -20,6 +21,8 @@ const speakers = computed(() =>
 const time = computed(() => timeRange(props.item.start_time, props.item.end_time))
 const category = computed(() => clean(props.item.category))
 const venue = computed(() => clean(props.item.venue))
+// Organisers write descriptions as Markdown; markdown.js escapes any raw HTML in them.
+const description = computed(() => renderMarkdown(props.item.description))
 </script>
 
 <template>
@@ -54,9 +57,8 @@ const venue = computed(() => clean(props.item.venue))
       {{ venue }}
     </p>
 
-    <p v-if="item.description" class="mt-2 text-sm leading-relaxed text-muted">
-      {{ item.description }}
-    </p>
+    <!-- eslint-disable-next-line vue/no-v-html -- sanitised in markdown.js (html: false) -->
+    <div v-if="description" class="md mt-2 text-sm leading-relaxed text-muted" v-html="description"></div>
 
     <a
       v-if="item.link"
