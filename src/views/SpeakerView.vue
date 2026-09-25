@@ -89,7 +89,7 @@ const sessions = computed(() => speaker.value?.agendas ?? [])
         </h3>
         <ol class="mt-3 space-y-3">
           <li v-for="session in sessions" :key="session.id">
-            <SessionCard :item="session" show-venue :exclude-speaker="speaker.id" />
+            <SessionCard :item="session" show-venue />
           </li>
         </ol>
       </section>

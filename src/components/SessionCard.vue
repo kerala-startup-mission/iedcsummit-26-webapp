@@ -11,13 +11,9 @@ const props = defineProps({
   showSpeakers: { type: Boolean, default: true },
   /** Render the venue line — redundant on the agenda, where a venue is already selected. */
   showVenue: { type: Boolean, default: false },
-  /** Speaker id to drop from the strip, so a speaker page doesn't list the speaker again. */
-  excludeSpeaker: { type: String, default: null },
 })
 
-const speakers = computed(() =>
-  sessionSpeakers(props.item).filter((speaker) => speaker.id !== props.excludeSpeaker),
-)
+const speakers = computed(() => sessionSpeakers(props.item))
 const time = computed(() => timeRange(props.item.start_time, props.item.end_time))
 const category = computed(() => clean(props.item.category))
 const venue = computed(() => clean(props.item.venue))
@@ -74,17 +70,25 @@ const description = computed(() => renderMarkdown(props.item.description))
       <li v-for="speaker in speakers" :key="speaker.id">
         <RouterLink
           :to="{ name: 'speaker', params: { hid: speaker.id } }"
-          class="flex items-center gap-2.5 rounded-lg transition hover:opacity-70"
+          class="flex items-center gap-3 rounded-lg transition hover:opacity-70"
         >
           <SpeakerAvatar
             :photo="speaker.photo"
             :name="speaker.name"
-            class="size-9 shrink-0 rounded-full text-[11px]"
+            class="size-12 shrink-0 rounded-full text-xs"
           />
           <span class="min-w-0">
             <span class="block truncate text-sm font-semibold">{{ clean(speaker.name) }}</span>
+            <!--
+              Designation and organisation get a line each rather than being joined: the two
+              run to a median 47 characters together, which truncates the organisation away
+              entirely at phone width. Both are nullable in the API.
+            -->
             <span v-if="speaker.designation" class="block truncate text-xs text-muted">
               {{ clean(speaker.designation) }}
+            </span>
+            <span v-if="speaker.organisation" class="block truncate text-xs text-muted">
+              {{ clean(speaker.organisation) }}
             </span>
           </span>
         </RouterLink>
