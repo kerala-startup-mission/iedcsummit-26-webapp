@@ -8,7 +8,7 @@ import { getTicketCode } from '../ticket'
 const tiles = computed(() => [
   { to: '/agenda', label: 'Agenda', icon: 'calendar' },
   { to: '/speakers', label: 'Speakers', icon: 'users' },
-  { to: '/venue-map', label: 'Venue Map', icon: 'map' },
+  { href: 'https://iedc-summit-s2cb.vercel.app/', label: 'Venue Map', icon: 'map' },
   { to: '/travel-plan', label: 'Travel Plan', icon: 'bus' },
   ...(getTicketCode() ? [{ to: '/entry-pass', label: 'Entry Pass', icon: 'ticket' }] : []),
 ])
@@ -43,10 +43,12 @@ const tiles = computed(() => [
     </section>
 
     <nav class="mt-5 grid grid-cols-3 gap-3">
-      <RouterLink
+      <!-- A tile is an in-app route, or an <a> when it points somewhere outside the app. -->
+      <component
+        :is="tile.href ? 'a' : RouterLink"
         v-for="tile in tiles"
-        :key="tile.to"
-        :to="tile.to"
+        :key="tile.label"
+        v-bind="tile.href ? { href: tile.href } : { to: tile.to }"
         class="flex aspect-square flex-col items-center justify-center gap-2.5 rounded-2xl bg-white px-2 shadow-sm ring-1 ring-line/60 transition active:scale-95 hover:ring-brand/40"
       >
         <svg
@@ -86,7 +88,7 @@ const tiles = computed(() => [
           </template>
         </svg>
         <span class="text-center text-sm leading-tight font-semibold">{{ tile.label }}</span>
-      </RouterLink>
+      </component>
     </nav>
   </main>
 </template>

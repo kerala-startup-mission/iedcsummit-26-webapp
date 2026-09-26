@@ -11,7 +11,6 @@ const routes = [
     props: true,
     component: () => import('./views/SpeakerView.vue'),
   },
-  { path: '/venue-map', name: 'venue-map', component: () => import('./views/VenueMapView.vue') },
   {
     path: '/entry-pass',
     name: 'entry-pass',
