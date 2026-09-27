@@ -7,7 +7,7 @@ WORKDIR /app
 # Vite inlines VITE_* values into the bundle at build time, so every event setting has
 # to be present now — setting them on `docker run` would have no effect. Defaults match
 # .env.example; override any of them with --build-arg to point the image at another event.
-ARG VITE_EVENT_BASE_URL="https://events.startupmission.in"
+ARG VITE_EVENT_BASE_URL="https://events-cdn.startupmission.in"
 ARG VITE_EVENT_SLUG="iedc-summit-2026"
 ARG VITE_EVENT_BANNER="/summit-hero.png"
 ARG VITE_EVENT_NAME="IEDC Summit 2026"
