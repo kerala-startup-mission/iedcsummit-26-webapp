@@ -8,7 +8,7 @@ import { getTicketCode } from '../ticket'
 const tiles = computed(() => [
   { to: '/agenda', label: 'Agenda', icon: 'calendar' },
   { to: '/speakers', label: 'Speakers', icon: 'users' },
-  { href: 'https://iedc-summit-s2cb.vercel.app/', label: 'Venue Map', icon: 'map' },
+  { href: 'https://map.iedcsummit.in/', label: 'Venue Map', icon: 'map' },
   { to: '/travel-plan', label: 'Travel Plan', icon: 'bus' },
   ...(getTicketCode() ? [{ to: '/entry-pass', label: 'Entry Pass', icon: 'ticket' }] : []),
 ])
